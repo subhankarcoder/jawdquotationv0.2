@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Trash2, ArrowRight } from 'lucide-react';
-import { BankDetails, RoundingType } from '@/types';
+import { BankDetails, QuotationItem, RoundingType } from '@/types';
 
 export default function QuotationForm() {
     const { state, dispatch } = useQuotation();
@@ -20,7 +20,7 @@ export default function QuotationForm() {
     const handleItemChange = (index: number, e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
         const isNumeric = ['quantity', 'rate', 'cgstRate', 'sgstRate'].includes(name);
-        dispatch({ type: 'UPDATE_ITEM', index, field: name as any, value: isNumeric ? parseFloat(value) || 0 : value });
+        dispatch({ type: 'UPDATE_ITEM', index, field: name as keyof QuotationItem, value: isNumeric ? parseFloat(value) || 0 : value });
     };
 
     // New handler for rounding type
@@ -85,6 +85,7 @@ export default function QuotationForm() {
                                 <InputField name="rate" label="Rate" type="number" value={item.rate} onChange={(e) => handleItemChange(index, e)} />
                                 <InputField name="cgstRate" label="CGST (%)" type="number" value={item.cgstRate} onChange={(e) => handleItemChange(index, e)} />
                                 <InputField name="sgstRate" label="SGST (%)" type="number" value={item.sgstRate} onChange={(e) => handleItemChange(index, e)} />
+                                <InputField name="hsn" label="HSN Code" type="string" value={item.hsn} onChange={(e) => handleItemChange(index, e)} />
                             </div>
                         </div>
                     ))}

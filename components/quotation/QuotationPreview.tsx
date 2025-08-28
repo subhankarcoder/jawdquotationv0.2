@@ -14,12 +14,12 @@ const DetailRow = ({ label, value }: { label: string, value?: string }) => {
 
 export default function QuotationPreview({ data }: QuotationPreviewProps) {
     return (
-        <div style={{ fontFamily: 'Helvetica, sans-serif', padding: '40px', backgroundColor: '#fff', color: '#333', fontSize: '13px', lineHeight: '1.4' }}>
+        <div style={{ fontFamily: 'Helvetica, sans-serif', padding: '25px', backgroundColor: '#fff', color: '#333', fontSize: '13px', lineHeight: '1.4' }}>
 
             {/* Header */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '40px', borderBottom: '2px solid #eee', paddingBottom: '20px' }}>
                 <div>
-                    {data.companyDetails.logo && <img src={data.companyDetails.logo} alt="Company Logo" style={{ maxHeight: '60px', marginBottom: '20px' }} />}
+                    {data.companyDetails.logo && <img src={data.companyDetails.logo} alt="Company Logo" style={{ maxHeight: '100px', marginBottom: '20px' }} />}
                     <h1 style={{ fontSize: '28px', fontWeight: 'bold', margin: '0', color: '#111' }}>{data.quotationName}</h1>
                     <p style={{ color: '#666', fontSize: '14px', margin: '5px 0 0 0' }}>#{data.quotationId}</p>
                 </div>
@@ -137,7 +137,7 @@ export default function QuotationPreview({ data }: QuotationPreviewProps) {
 
                     {data.signature && (
                         <div style={{ textAlign: 'right', marginTop: '40px' }}>
-                            <img src={data.signature} alt="Signature" style={{ maxHeight: '50px', display: 'inline-block' }} />
+                            <img src={data.signature} alt="Signature" style={{ maxHeight: '80px', display: 'inline-block' }} />
                             <p style={{ borderTop: '1px solid #ccc', paddingTop: '5px', marginTop: '5px' }}>Authorised Signatory</p>
                         </div>
                     )}

@@ -70,7 +70,7 @@ export default function PDFPreview({
             // A4 dimensions in mm
             const pageWidth = 210;
             const pageHeight = 297;
-            const margin = 10; // 10mm margin on all sides
+            const margin = 2; // 10mm margin on all sides
             const contentWidth = pageWidth - (margin * 2);
             const contentHeight = pageHeight - (margin * 2);      
             
