@@ -106,7 +106,7 @@ export default function PDFPreview({
             } else {
                 // Improved multi-page handling
                 const totalPages = Math.ceil(imgHeight / contentHeight);
-                let currentPage = 1;
+                const currentPage = 1;
                 
                 // Calculate the scale factor between canvas pixels and PDF mm
                 const scaleY = canvas.height / imgHeight;
