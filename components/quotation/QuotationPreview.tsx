@@ -20,7 +20,10 @@ export default function QuotationPreview({ data }: QuotationPreviewProps) {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '40px', borderBottom: '2px solid #eee', paddingBottom: '20px' }}>
                 <div>
                     {data.companyDetails.logo && <img src={data.companyDetails.logo} alt="Company Logo" style={{ maxHeight: '100px', marginBottom: '20px' }} />}
-                    <h1 style={{ fontSize: '28px', fontWeight: 'bold', margin: '0', color: '#111' }}>{data.quotationName}</h1>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '5px' }}>
+                        <h1 style={{ fontSize: '28px', fontWeight: 'bold', margin: '0', color: '#111' }}>{data.quotationName}</h1>
+                        {data.tag && (<p style={{ backgroundColor: '#8b5cf6', color: '#fff', padding: '2px 6px', fontSize: '12px' }}>{data.tag}</p>)}
+                    </div>
                     <p style={{ color: '#666', fontSize: '14px', margin: '5px 0 0 0' }}>#{data.quotationId}</p>
                 </div>
                 <div style={{ textAlign: 'right' }}>
@@ -124,7 +127,7 @@ export default function QuotationPreview({ data }: QuotationPreviewProps) {
                         {/* <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}><span style={{ color: '#666' }}>Discount ({data.discountPercentage}%)</span><span>-{formatCurrency(data.totals.discountAmount)}</span></div> */}
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}><span style={{ color: '#666' }}>CGST</span><span>{formatCurrency(data.totals.totalCgst)}</span></div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}><span style={{ color: '#666' }}>SGST</span><span>{formatCurrency(data.totals.totalSgst)}</span></div>
-                        {data.advancePaid > 0 && 
+                        {data.advancePaid > 0 &&
                             (
                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}><span style={{ color: '#666' }}>{data.advanceFieldLabel}</span><span>{formatCurrency(data.advancePaid)}</span></div>
                             )

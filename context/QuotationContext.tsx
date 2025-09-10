@@ -35,6 +35,7 @@ const initialState: QuotationData = {
     quotationId: 'REF/2025-26/001',
     quotationDate: new Date().toISOString().split('T')[0],
     dueDate: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    tag: '',
     companyDetails: { name: 'Your Company', address: '123 Business Rd, Business City', gstin: '', pan: '', email: 'example@example.com', phone: '+123456789', logo: '' },
     clientDetails: { name: 'Client Company', address: '456 Client Ave, Client Town', gstin: '', pan: '', email: 'example@example.com', phone: '+123456789' },
     items: [

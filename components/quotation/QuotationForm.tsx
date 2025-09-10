@@ -38,6 +38,7 @@ export default function QuotationForm() {
                     <InputField id="quotationId" label="Quotation ID" value={state.quotationId} onChange={(e) => dispatch({ type: 'SET_FIELD', field: 'quotationId', value: e.target.value })} />
                     <InputField id="quotationDate" label="Date" type="date" value={state.quotationDate} onChange={(e) => dispatch({ type: 'SET_FIELD', field: 'quotationDate', value: e.target.value })} />
                     <InputField id="dueDate" label="Due Date" type="date" value={state.dueDate} onChange={(e) => dispatch({ type: 'SET_FIELD', field: 'dueDate', value: e.target.value })} />
+                    <InputField id="tag" label="Tag (Optional)" value={state.tag || ''} onChange={(e) => dispatch({ type: 'SET_FIELD', field: 'tag', value: e.target.value })} placeholder="e.g., Project Alpha, Q4 2024" />
                 </CardContent>
             </Card>
 

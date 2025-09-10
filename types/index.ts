@@ -55,6 +55,7 @@ export interface QuotationData {
     quotationId: string;
     quotationDate: string;
     dueDate: string;
+    tag?: string;
     companyDetails: CompanyDetails;
     clientDetails: ClientDetails;
     items: QuotationItem[];
@@ -63,8 +64,8 @@ export interface QuotationData {
     additionalNotes: string;
     discountPercentage: number;
     advancePaid: number;
-    advanceFieldLabel: string; // New field for custom advance payment label
-    roundingType: RoundingType; // New field for rounding type
+    advanceFieldLabel: string;
+    roundingType: RoundingType;
     additionalCharges: number;
     signature?: string;
     totals: Totals;
