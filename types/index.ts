@@ -70,3 +70,18 @@ export interface QuotationData {
     signature?: string;
     totals: Totals;
 }
+
+export interface BilledFromAddress {
+  id?: string;
+  user_id?: string;
+  name: string;
+  address: string;
+  gstin: string;
+  pan: string;
+  email: string;
+  phone: string;
+  logo?: string;
+  is_default?: boolean;
+  created_at?: string;
+  updated_at?: string;
+}

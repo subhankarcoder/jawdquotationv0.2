@@ -39,7 +39,7 @@ const initialState: QuotationData = {
     companyDetails: { name: 'Your Company', address: '123 Business Rd, Business City', gstin: '', pan: '', email: 'example@example.com', phone: '+123456789', logo: '' },
     clientDetails: { name: 'Client Company', address: '456 Client Ave, Client Town', gstin: '', pan: '', email: 'example@example.com', phone: '+123456789' },
     items: [
-        { id: 1, name: 'Premium Web Development', description: 'Full-stack development of a responsive website with a modern tech stack.', hsn: '9983', quantity: 10, rate: 5000, cgstRate: 9, sgstRate: 9 }
+        { id: 1, name: 'Premium Web Development', description: 'Full-stack development of a responsive website with a modern tech stack.', hsn: '9983', quantity: 10, rate: 5000, cgstRate: 2.5, sgstRate: 2.5 }
     ],
     bankDetails: { bankName: 'Global Bank', accountHolder: 'Your Company Inc.', accountNumber: '1234567890', ifsc: 'GBIN0001234', accountType: 'Current' },
     terms: 'Please pay within 15 days. Overdue payments are subject to a 1.5% monthly interest rate.',
@@ -67,7 +67,7 @@ const QuotationReducer = (state: QuotationData, action: Action): QuotationData =
         case 'SET_BANK_DETAILS':
             return { ...state, bankDetails: { ...(state.bankDetails as BankDetails), [action.field]: action.value }};
         case 'ADD_ITEM':
-            const newItem: QuotationItem = { id: Date.now(), name: '', description: '', hsn: '', quantity: 1, rate: 0, cgstRate: 9, sgstRate: 9 };
+            const newItem: QuotationItem = { id: Date.now(), name: '', description: '', hsn: '', quantity: 1, rate: 0, cgstRate: 2.5, sgstRate: 2.5 };
             return { ...state, items: [...state.items, newItem] };
         case 'UPDATE_ITEM':
             const updatedItems = [...state.items];

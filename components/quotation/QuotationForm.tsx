@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from 'react';
 import { useQuotation } from '@/context/QuotationContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -7,10 +8,12 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Trash2, ArrowRight } from 'lucide-react';
-import { BankDetails, QuotationItem, RoundingType } from '@/types';
+import AddressSelector from './AddressSelector';
+import { BankDetails, CompanyDetails, QuotationItem, RoundingType } from '@/types';
 
 export default function QuotationForm() {
     const { state, dispatch } = useQuotation();
+    const [showAddressSelector, setShowAddressSelector] = useState(false);
 
     // Handlers are unchanged...
     const handleDetailChange = (type: 'SET_COMPANY_DETAILS' | 'SET_CLIENT_DETAILS' | 'SET_BANK_DETAILS', e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -27,7 +30,17 @@ export default function QuotationForm() {
     const handleRoundingChange = (roundingType: RoundingType) => {
         dispatch({ type: 'SET_FIELD', field: 'roundingType', value: roundingType });
     };
-    
+
+    const handleAddressImport = (companyDetails: CompanyDetails) => {
+        Object.entries(companyDetails).forEach(([key, value]) => {
+            dispatch({
+                type: 'SET_COMPANY_DETAILS',
+                field: key,
+                value: value
+            });
+        });
+    };
+
     return (
         <div className="space-y-6">
             {/* General Details */}
@@ -47,13 +60,33 @@ export default function QuotationForm() {
                 <Card>
                     <CardHeader><CardTitle>Billed By</CardTitle></CardHeader>
                     <CardContent className="space-y-4">
+                        <div className="flex justify-between items-center mb-4">
+                            <h3 className="text-lg font-semibold">Billed By</h3>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => setShowAddressSelector(true)}
+                                className="flex items-center gap-2"
+                            >
+                                Import from Saved Addresses
+                            </Button>
+                        </div>
+
+                        {showAddressSelector && (
+                            <div className="mb-4">
+                                <AddressSelector
+                                    onSelect={handleAddressImport}
+                                    onClose={() => setShowAddressSelector(false)}
+                                />
+                            </div>
+                        )}
                         <InputField id="companyName" name="name" label="Company Name" value={state.companyDetails.name} onChange={(e) => handleDetailChange('SET_COMPANY_DETAILS', e)} />
                         <InputField id="companyLogo" name="logo" label="Company Logo URL" value={state.companyDetails.logo} onChange={(e) => handleDetailChange('SET_COMPANY_DETAILS', e)} placeholder="https://example.com/logo.png" />
                         <InputField id="companyAddress" name="address" label="Address" value={state.companyDetails.address} onChange={(e) => handleDetailChange('SET_COMPANY_DETAILS', e)} />
                         <InputField id="companyGstin" name="gstin" label="GSTIN" value={state.companyDetails.gstin} onChange={(e) => handleDetailChange('SET_COMPANY_DETAILS', e)} />
                         <InputField id="companyPan" name="pan" label="PAN (Optional)" value={state.companyDetails.pan} onChange={(e) => handleDetailChange('SET_COMPANY_DETAILS', e)} />
-                        <InputField id="companyEmail" name="email" label="Email (Optional)" value={state.companyDetails.email} onChange={(e) => handleDetailChange('SET_COMPANY_DETAILS', e)} placeholder="example@example.com"/>
-                        <InputField id="companyPhone" name="phone" label="Phone (Optional)" value={state.companyDetails.phone} onChange={(e) => handleDetailChange('SET_COMPANY_DETAILS', e)} placeholder="example@example.com"/>
+                        <InputField id="companyEmail" name="email" label="Email (Optional)" value={state.companyDetails.email} onChange={(e) => handleDetailChange('SET_COMPANY_DETAILS', e)} placeholder="example@example.com" />
+                        <InputField id="companyPhone" name="phone" label="Phone (Optional)" value={state.companyDetails.phone} onChange={(e) => handleDetailChange('SET_COMPANY_DETAILS', e)} placeholder="example@example.com" />
                     </CardContent>
                 </Card>
                 <Card>
@@ -124,20 +157,20 @@ export default function QuotationForm() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {/* Advance Payment */}
                         <div className="space-y-4">
-                            <InputField 
-                                id="advanceFieldLabel" 
-                                label="Advance Payment Field Label" 
-                                value={state.advanceFieldLabel} 
-                                onChange={(e) => dispatch({ type: 'SET_FIELD', field: 'advanceFieldLabel', value: e.target.value })} 
-                                placeholder="e.g., Advance Paid, Down Payment, etc." 
+                            <InputField
+                                id="advanceFieldLabel"
+                                label="Advance Payment Field Label"
+                                value={state.advanceFieldLabel}
+                                onChange={(e) => dispatch({ type: 'SET_FIELD', field: 'advanceFieldLabel', value: e.target.value })}
+                                placeholder="e.g., Advance Paid, Down Payment, etc."
                             />
-                            <InputField 
-                                id="advancePaid" 
-                                label={state.advanceFieldLabel + " Amount"} 
-                                type="number" 
-                                value={state.advancePaid} 
-                                onChange={(e) => dispatch({ type: 'SET_FIELD', field: 'advancePaid', value: parseFloat(e.target.value) || 0 })} 
-                                placeholder="0" 
+                            <InputField
+                                id="advancePaid"
+                                label={state.advanceFieldLabel + " Amount"}
+                                type="number"
+                                value={state.advancePaid}
+                                onChange={(e) => dispatch({ type: 'SET_FIELD', field: 'advancePaid', value: parseFloat(e.target.value) || 0 })}
+                                placeholder="0"
                             />
                         </div>
 
@@ -181,7 +214,7 @@ export default function QuotationForm() {
                             </div>
                         </div>
                     </div>
-                    
+
                     {/* Display current totals for reference */}
                     <div className="mt-4 p-4 bg-gray-50 rounded-lg">
                         <div className="text-sm text-gray-600 space-y-1">
