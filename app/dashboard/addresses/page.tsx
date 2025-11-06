@@ -4,17 +4,17 @@ import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { BilledFromAddress } from '@/types';
 import { Button } from '@/components/ui/button';
-import { FaMapMarkerAlt } from "react-icons/fa";
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Plus, Trash2, Edit2, Star } from 'lucide-react';
+import { FaMapMarkerAlt } from 'react-icons/fa';
+import { Card, CardContent } from '@/components/ui/card';
+import { Plus } from 'lucide-react';
 import toast from 'react-hot-toast';
 import AddressForm from '@/components/addresses/AddressForm';
 import AddressCard from '@/components/addresses/AddressCard';
 
 export default function AddressesPage() {
   const [addresses, setAddresses] = useState<BilledFromAddress[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [showForm, setShowForm] = useState(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [showForm, setShowForm] = useState<boolean>(false);
   const [editingAddress, setEditingAddress] = useState<BilledFromAddress | null>(null);
   const supabase = createClient();
 
@@ -22,7 +22,7 @@ export default function AddressesPage() {
     fetchAddresses();
   }, []);
 
-  const fetchAddresses = async () => {
+  const fetchAddresses = async (): Promise<void> => {
     try {
       setIsLoading(true);
       const { data, error } = await supabase
@@ -33,17 +33,18 @@ export default function AddressesPage() {
 
       if (error) throw error;
 
-      setAddresses(data || []);
-    } catch (error: any) {
+      setAddresses(data as BilledFromAddress[] || []);
+    } catch (error: unknown) {
       toast.error('Failed to fetch addresses');
-      console.error('Fetch error:', error);
+      console.error('Fetch error:', error instanceof Error ? error.message : error);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this address?')) return;
+  const handleDelete = async (id: string): Promise<void> => {
+    const confirmed = confirm('Are you sure you want to delete this address?');
+    if (!confirmed) return;
 
     try {
       const { error } = await supabase
@@ -54,14 +55,14 @@ export default function AddressesPage() {
       if (error) throw error;
 
       toast.success('Address deleted successfully');
-      fetchAddresses();
-    } catch (error: any) {
+      await fetchAddresses();
+    } catch (error: unknown) {
       toast.error('Failed to delete address');
-      console.error('Delete error:', error);
+      console.error('Delete error:', error instanceof Error ? error.message : error);
     }
   };
 
-  const handleSetDefault = async (id: string) => {
+  const handleSetDefault = async (id: string): Promise<void> => {
     try {
       const { error } = await supabase
         .from('billed_from_addresses')
@@ -71,19 +72,19 @@ export default function AddressesPage() {
       if (error) throw error;
 
       toast.success('Default address updated');
-      fetchAddresses();
-    } catch (error: any) {
+      await fetchAddresses();
+    } catch (error: unknown) {
       toast.error('Failed to set default address');
-      console.error('Set default error:', error);
+      console.error('Set default error:', error instanceof Error ? error.message : error);
     }
   };
 
-  const handleEdit = (address: BilledFromAddress) => {
+  const handleEdit = (address: BilledFromAddress): void => {
     setEditingAddress(address);
     setShowForm(true);
   };
 
-  const handleFormClose = () => {
+  const handleFormClose = (): void => {
     setShowForm(false);
     setEditingAddress(null);
     fetchAddresses();

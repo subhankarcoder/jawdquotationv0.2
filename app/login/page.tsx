@@ -3,20 +3,20 @@
 import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { FaGoogle } from "react-icons/fa";
+import { FaGoogle } from 'react-icons/fa';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 
 export default function LoginPage() {
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const router = useRouter();
   const supabase = createClient();
 
-  const handleGoogleLogin = async () => {
+  const handleGoogleLogin = async (): Promise<void> => {
     try {
       setIsLoading(true);
-      
+
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
@@ -32,9 +32,14 @@ export default function LoginPage() {
         toast.error(error.message);
         return;
       }
-    } catch (error: any) {
+
+      // Optional: redirect manually if needed
+      if (data?.url) {
+        window.location.href = data.url;
+      }
+    } catch (error: unknown) {
       toast.error('Failed to sign in with Google');
-      console.error('Login error:', error);
+      console.error('Login error:', error instanceof Error ? error.message : error);
     } finally {
       setIsLoading(false);
     }
@@ -69,7 +74,7 @@ export default function LoginPage() {
               </>
             )}
           </Button>
-          
+
           <p className="text-center text-sm text-gray-600">
             By continuing, you agree to our Terms of Service and Privacy Policy
           </p>

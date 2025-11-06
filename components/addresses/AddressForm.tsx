@@ -17,8 +17,10 @@ interface AddressFormProps {
   onSuccess: () => void;
 }
 
+type FormAddressData = Omit<BilledFromAddress, 'id' | 'user_id' | 'created_at' | 'updated_at'>;
+
 export default function AddressForm({ address, onClose, onSuccess }: AddressFormProps) {
-  const [formData, setFormData] = useState<Omit<BilledFromAddress, 'id' | 'user_id' | 'created_at' | 'updated_at'>>({
+  const [formData, setFormData] = useState<FormAddressData>({
     name: '',
     address: '',
     gstin: '',
@@ -28,7 +30,8 @@ export default function AddressForm({ address, onClose, onSuccess }: AddressForm
     logo: '',
     is_default: false,
   });
-  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const supabase = createClient();
 
   useEffect(() => {
@@ -48,7 +51,7 @@ export default function AddressForm({ address, onClose, onSuccess }: AddressForm
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
+  ): void => {
     const { name, value, type } = e.target;
     setFormData((prev) => ({
       ...prev,
@@ -56,10 +59,10 @@ export default function AddressForm({ address, onClose, onSuccess }: AddressForm
     }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
-    
-    // Validation
+
+    // Basic validation
     if (!formData.name || !formData.address || !formData.email || !formData.phone) {
       toast.error('Please fill in all required fields');
       return;
@@ -72,7 +75,7 @@ export default function AddressForm({ address, onClose, onSuccess }: AddressForm
       return;
     }
 
-    // Phone validation (basic)
+    // Phone validation
     if (formData.phone.length < 10) {
       toast.error('Please enter a valid phone number');
       return;
@@ -83,8 +86,10 @@ export default function AddressForm({ address, onClose, onSuccess }: AddressForm
 
       const {
         data: { user },
+        error: userError,
       } = await supabase.auth.getUser();
 
+      if (userError) throw userError;
       if (!user) {
         toast.error('You must be logged in');
         return;
@@ -92,27 +97,31 @@ export default function AddressForm({ address, onClose, onSuccess }: AddressForm
 
       if (address?.id) {
         // Update existing address
-        const { error } = await supabase
+        const { error: updateError } = await supabase
           .from('billed_from_addresses')
           .update(formData)
           .eq('id', address.id);
 
-        if (error) throw error;
+        if (updateError) throw updateError;
+
         toast.success('Address updated successfully');
       } else {
         // Create new address
-        const { error } = await supabase
+        const { error: insertError } = await supabase
           .from('billed_from_addresses')
           .insert([{ ...formData, user_id: user.id }]);
 
-        if (error) throw error;
+        if (insertError) throw insertError;
+
         toast.success('Address added successfully');
       }
 
       onSuccess();
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to save address');
-      console.error('Save error:', error);
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error ? error.message : 'Failed to save address';
+      toast.error(message);
+      console.error('Save error:', message);
     } finally {
       setIsSubmitting(false);
     }

@@ -3,7 +3,7 @@
 import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
 import { User } from '@supabase/supabase-js';
-import { LogOut, FileText, MapPin } from 'lucide-react';
+import { LogOut, FileText, MapPin, LucideIcon } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import toast from 'react-hot-toast';
@@ -12,26 +12,33 @@ interface DashboardNavProps {
   user: User;
 }
 
+interface NavItem {
+  href: string;
+  label: string;
+  icon: LucideIcon;
+}
+
 export default function DashboardNav({ user }: DashboardNavProps) {
   const router = useRouter();
   const pathname = usePathname();
   const supabase = createClient();
 
-  const handleSignOut = async () => {
+  const handleSignOut = async (): Promise<void> => {
     try {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
-      
+
       toast.success('Signed out successfully');
       router.push('/login');
       router.refresh();
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
       toast.error('Failed to sign out');
-      console.error('Sign out error:', error);
+      console.error('Sign out error:', message);
     }
   };
 
-  const navItems = [
+  const navItems: NavItem[] = [
     {
       href: '/dashboard',
       label: 'Create Quotation',
@@ -52,12 +59,12 @@ export default function DashboardNav({ user }: DashboardNavProps) {
             <Link href="/dashboard" className="text-xl font-bold text-gray-900">
               Quotation Generator
             </Link>
-            
+
             <div className="hidden md:flex space-x-4">
               {navItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = pathname === item.href;
-                
+
                 return (
                   <Link
                     key={item.href}
@@ -77,9 +84,11 @@ export default function DashboardNav({ user }: DashboardNavProps) {
           </div>
 
           <div className="flex items-center gap-4">
-            <div className="hidden sm:block text-sm text-gray-600">
-              {user.email}
-            </div>
+            {user.email && (
+              <div className="hidden sm:block text-sm text-gray-600">
+                {user.email}
+              </div>
+            )}
             <Button
               variant="outline"
               size="sm"

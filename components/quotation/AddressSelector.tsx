@@ -15,15 +15,15 @@ interface AddressSelectorProps {
 
 export default function AddressSelector({ onSelect, onClose }: AddressSelectorProps) {
   const [addresses, setAddresses] = useState<BilledFromAddress[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const supabase = createClient();
 
   useEffect(() => {
-    fetchAddresses();
+    void fetchAddresses();
   }, []);
 
-  const fetchAddresses = async () => {
+  const fetchAddresses = async (): Promise<void> => {
     try {
       setIsLoading(true);
       const { data, error } = await supabase
@@ -34,22 +34,24 @@ export default function AddressSelector({ onSelect, onClose }: AddressSelectorPr
 
       if (error) throw error;
 
-      setAddresses(data || []);
-      
-      // Auto-select default address
-      const defaultAddress = data?.find((addr) => addr.is_default);
+      const addressData = (data ?? []) as BilledFromAddress[];
+      setAddresses(addressData);
+
+      // Auto-select default address if available
+      const defaultAddress = addressData.find((addr) => addr.is_default);
       if (defaultAddress) {
         setSelectedId(defaultAddress.id!);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to fetch addresses';
       toast.error('Failed to fetch addresses');
-      console.error('Fetch error:', error);
+      console.error('Fetch error:', message);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleImport = () => {
+  const handleImport = (): void => {
     const selected = addresses.find((addr) => addr.id === selectedId);
     if (!selected) {
       toast.error('Please select an address');
