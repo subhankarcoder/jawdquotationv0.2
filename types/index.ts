@@ -82,6 +82,20 @@ export interface BilledFromAddress {
   phone: string;
   logo?: string;
   is_default?: boolean;
+  bank_details_id?: string | null;
+  bank_details?: BankDetailsDB | null;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface BankDetailsDB {
+  id: string;
+  user_id?: string;
+  bank_name: string;
+  account_holder: string;
+  account_number: string;
+  ifsc: string;
+  account_type: string;
   created_at?: string;
   updated_at?: string;
 }

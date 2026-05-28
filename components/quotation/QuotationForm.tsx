@@ -10,6 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Trash2, ArrowRight } from 'lucide-react';
 import AddressSelector from './AddressSelector';
 import { BankDetails, CompanyDetails, QuotationItem, RoundingType } from '@/types';
+import LogoUpload from '@/components/shared/LogoUpload';
 
 export default function QuotationForm() {
     const { state, dispatch } = useQuotation();
@@ -31,7 +32,7 @@ export default function QuotationForm() {
         dispatch({ type: 'SET_FIELD', field: 'roundingType', value: roundingType });
     };
 
-    const handleAddressImport = (companyDetails: CompanyDetails) => {
+    const handleAddressImport = (companyDetails: CompanyDetails, bankDetails?: BankDetails | null) => {
         Object.entries(companyDetails).forEach(([key, value]) => {
             dispatch({
                 type: 'SET_COMPANY_DETAILS',
@@ -39,6 +40,15 @@ export default function QuotationForm() {
                 value: value
             });
         });
+        if (bankDetails) {
+            Object.entries(bankDetails).forEach(([key, value]) => {
+                dispatch({
+                    type: 'SET_BANK_DETAILS',
+                    field: key as keyof BankDetails,
+                    value: value
+                });
+            });
+        }
     };
 
     return (
@@ -81,7 +91,15 @@ export default function QuotationForm() {
                             </div>
                         )}
                         <InputField id="companyName" name="name" label="Company Name" value={state.companyDetails.name} onChange={(e) => handleDetailChange('SET_COMPANY_DETAILS', e)} />
-                        <InputField id="companyLogo" name="logo" label="Company Logo URL" value={state.companyDetails.logo} onChange={(e) => handleDetailChange('SET_COMPANY_DETAILS', e)} placeholder="https://example.com/logo.png" />
+                        
+                        <div className="space-y-2 col-span-full">
+                            <LogoUpload
+                                value={state.companyDetails.logo || ''}
+                                onChange={(url) => dispatch({ type: 'SET_COMPANY_DETAILS', field: 'logo', value: url })}
+                                label="Company Logo"
+                            />
+                        </div>
+
                         <InputField id="companyAddress" name="address" label="Address" value={state.companyDetails.address} onChange={(e) => handleDetailChange('SET_COMPANY_DETAILS', e)} />
                         <InputField id="companyGstin" name="gstin" label="GSTIN" value={state.companyDetails.gstin} onChange={(e) => handleDetailChange('SET_COMPANY_DETAILS', e)} />
                         <InputField id="companyPan" name="pan" label="PAN (Optional)" value={state.companyDetails.pan} onChange={(e) => handleDetailChange('SET_COMPANY_DETAILS', e)} />
@@ -136,6 +154,19 @@ export default function QuotationForm() {
                         <InputField name="accountHolder" label="Account Holder" value={state.bankDetails?.accountHolder} onChange={(e) => handleDetailChange('SET_BANK_DETAILS', e)} />
                         <InputField name="accountNumber" label="Account Number" value={state.bankDetails?.accountNumber} onChange={(e) => handleDetailChange('SET_BANK_DETAILS', e)} />
                         <InputField name="ifsc" label="IFSC Code" value={state.bankDetails?.ifsc} onChange={(e) => handleDetailChange('SET_BANK_DETAILS', e)} />
+                        <div className="grid w-full items-center gap-1.5">
+                            <Label htmlFor="accountType">Account Type</Label>
+                            <select
+                                id="accountType"
+                                name="accountType"
+                                value={state.bankDetails?.accountType || 'Current'}
+                                onChange={(e) => dispatch({ type: 'SET_BANK_DETAILS', field: 'accountType', value: e.target.value })}
+                                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                            >
+                                <option value="Current">Current</option>
+                                <option value="Savings">Savings</option>
+                            </select>
+                        </div>
                     </CardContent>
                 </Card>
                 <div className="space-y-6">

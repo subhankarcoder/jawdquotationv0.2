@@ -2,14 +2,14 @@
 
 import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { BilledFromAddress, CompanyDetails } from '@/types';
+import { BilledFromAddress, CompanyDetails, BankDetails } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Building2, Check } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 interface AddressSelectorProps {
-  onSelect: (address: CompanyDetails) => void;
+  onSelect: (address: CompanyDetails, bankDetails?: BankDetails | null) => void;
   onClose: () => void;
 }
 
@@ -28,7 +28,7 @@ export default function AddressSelector({ onSelect, onClose }: AddressSelectorPr
       setIsLoading(true);
       const { data, error } = await supabase
         .from('billed_from_addresses')
-        .select('*')
+        .select('*, bank_details:bank_details_id(*)')
         .order('is_default', { ascending: false })
         .order('created_at', { ascending: false });
 
@@ -68,8 +68,16 @@ export default function AddressSelector({ onSelect, onClose }: AddressSelectorPr
       logo: selected.logo || '',
     };
 
-    onSelect(companyDetails);
-    toast.success('Address imported successfully');
+    const bankDetails: BankDetails | null = selected.bank_details ? {
+      bankName: selected.bank_details.bank_name,
+      accountHolder: selected.bank_details.account_holder,
+      accountNumber: selected.bank_details.account_number,
+      ifsc: selected.bank_details.ifsc,
+      accountType: selected.bank_details.account_type,
+    } : null;
+
+    onSelect(companyDetails, bankDetails);
+    toast.success('Address and bank details imported successfully');
     onClose();
   };
 

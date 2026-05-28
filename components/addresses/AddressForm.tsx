@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { BilledFromAddress } from '@/types';
+import { BilledFromAddress, BankDetailsDB } from '@/types';
+import LogoUpload from '@/components/shared/LogoUpload';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -29,10 +30,29 @@ export default function AddressForm({ address, onClose, onSuccess }: AddressForm
     phone: '',
     logo: '',
     is_default: false,
+    bank_details_id: null,
   });
 
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [bankAccounts, setBankAccounts] = useState<BankDetailsDB[]>([]);
   const supabase = createClient();
+
+  useEffect(() => {
+    const fetchBanks = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('bank_details')
+          .select('*')
+          .order('bank_name', { ascending: true });
+        if (!error && data) {
+          setBankAccounts(data as BankDetailsDB[]);
+        }
+      } catch (err) {
+        console.error('Failed to fetch bank accounts:', err);
+      }
+    };
+    void fetchBanks();
+  }, [supabase]);
 
   useEffect(() => {
     if (address) {
@@ -45,6 +65,7 @@ export default function AddressForm({ address, onClose, onSuccess }: AddressForm
         phone: address.phone,
         logo: address.logo || '',
         is_default: address.is_default || false,
+        bank_details_id: address.bank_details_id || null,
       });
     }
   }, [address]);
@@ -95,11 +116,16 @@ export default function AddressForm({ address, onClose, onSuccess }: AddressForm
         return;
       }
 
+      const payload = {
+        ...formData,
+        bank_details_id: formData.bank_details_id || null,
+      };
+
       if (address?.id) {
         // Update existing address
         const { error: updateError } = await supabase
           .from('billed_from_addresses')
-          .update(formData)
+          .update(payload)
           .eq('id', address.id);
 
         if (updateError) throw updateError;
@@ -109,7 +135,7 @@ export default function AddressForm({ address, onClose, onSuccess }: AddressForm
         // Create new address
         const { error: insertError } = await supabase
           .from('billed_from_addresses')
-          .insert([{ ...formData, user_id: user.id }]);
+          .insert([{ ...payload, user_id: user.id }]);
 
         if (insertError) throw insertError;
 
@@ -205,15 +231,30 @@ export default function AddressForm({ address, onClose, onSuccess }: AddressForm
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="logo">Logo URL</Label>
-              <Input
-                id="logo"
-                name="logo"
-                value={formData.logo}
-                onChange={handleChange}
-                placeholder="https://example.com/logo.png"
+            <div className="space-y-2 md:col-span-2">
+              <LogoUpload
+                value={formData.logo || ''}
+                onChange={(url) => setFormData((prev) => ({ ...prev, logo: url }))}
+                label="Company Logo"
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="bank_details_id">Linked Bank Account</Label>
+              <select
+                id="bank_details_id"
+                name="bank_details_id"
+                value={formData.bank_details_id || ''}
+                onChange={(e) => setFormData(prev => ({ ...prev, bank_details_id: e.target.value || null }))}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <option value="">None (Do not link any bank details)</option>
+                {bankAccounts.map((bank) => (
+                  <option key={bank.id} value={bank.id}>
+                    {bank.bank_name} - {bank.account_number} ({bank.account_holder})
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
 

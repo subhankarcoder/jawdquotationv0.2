@@ -3,7 +3,7 @@
 import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
 import { User } from '@supabase/supabase-js';
-import { LogOut, FileText, MapPin, LucideIcon } from 'lucide-react';
+import { LogOut, FileText, MapPin, CreditCard, LucideIcon } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import toast from 'react-hot-toast';
@@ -48,6 +48,11 @@ export default function DashboardNav({ user }: DashboardNavProps) {
       href: '/dashboard/addresses',
       label: 'Manage Addresses',
       icon: MapPin,
+    },
+    {
+      href: '/dashboard/banks',
+      label: 'Manage Banks',
+      icon: CreditCard,
     },
   ];
 
