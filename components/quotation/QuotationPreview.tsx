@@ -1,5 +1,5 @@
+/* eslint-disable @next/next/no-img-element */
 import { QuotationData } from '@/types';
-import Image from 'next/image';
 
 interface QuotationPreviewProps {
     data: QuotationData;

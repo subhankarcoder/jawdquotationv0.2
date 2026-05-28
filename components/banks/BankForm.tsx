@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { BankDetailsDB, BilledFromAddress } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -32,26 +32,7 @@ export default function BankForm({ bank, onClose, onSuccess }: BankFormProps) {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const supabase = createClient();
 
-  useEffect(() => {
-    fetchCompanies();
-  }, []);
-
-  useEffect(() => {
-    if (bank) {
-      setFormData({
-        bank_name: bank.bank_name,
-        account_holder: bank.account_holder,
-        account_number: bank.account_number,
-        ifsc: bank.ifsc,
-        account_type: bank.account_type || 'Current',
-      });
-      fetchLinkedCompanies(bank.id);
-    } else {
-      setSelectedCompanyIds([]);
-    }
-  }, [bank]);
-
-  const fetchCompanies = async () => {
+  const fetchCompanies = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('billed_from_addresses')
@@ -63,9 +44,9 @@ export default function BankForm({ bank, onClose, onSuccess }: BankFormProps) {
     } catch (error) {
       console.error('Error fetching companies:', error);
     }
-  };
+  }, [supabase]);
 
-  const fetchLinkedCompanies = async (bankId: string) => {
+  const fetchLinkedCompanies = useCallback(async (bankId: string) => {
     try {
       const { data, error } = await supabase
         .from('billed_from_addresses')
@@ -79,7 +60,26 @@ export default function BankForm({ bank, onClose, onSuccess }: BankFormProps) {
     } catch (error) {
       console.error('Error fetching linked companies:', error);
     }
-  };
+  }, [supabase]);
+
+  useEffect(() => {
+    void fetchCompanies();
+  }, [fetchCompanies]);
+
+  useEffect(() => {
+    if (bank) {
+      setFormData({
+        bank_name: bank.bank_name,
+        account_holder: bank.account_holder,
+        account_number: bank.account_number,
+        ifsc: bank.ifsc,
+        account_type: bank.account_type || 'Current',
+      });
+      void fetchLinkedCompanies(bank.id);
+    } else {
+      setSelectedCompanyIds([]);
+    }
+  }, [bank, fetchLinkedCompanies]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -275,7 +275,7 @@ export default function BankForm({ bank, onClose, onSuccess }: BankFormProps) {
             </p>
             {companies.length === 0 ? (
               <div className="p-4 border border-dashed rounded-lg bg-gray-50 text-center text-sm text-gray-500">
-                No companies saved yet. Create a company in the "Manage Addresses" tab first.
+                No companies saved yet. Create a company in the &quot;Manage Addresses&quot; tab first.
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 max-h-48 overflow-y-auto p-1">

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { BilledFromAddress, CompanyDetails, BankDetails } from '@/types';
 import { Button } from '@/components/ui/button';
@@ -19,11 +19,7 @@ export default function AddressSelector({ onSelect, onClose }: AddressSelectorPr
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const supabase = createClient();
 
-  useEffect(() => {
-    void fetchAddresses();
-  }, []);
-
-  const fetchAddresses = async (): Promise<void> => {
+  const fetchAddresses = useCallback(async (): Promise<void> => {
     try {
       setIsLoading(true);
       const { data, error } = await supabase
@@ -49,7 +45,11 @@ export default function AddressSelector({ onSelect, onClose }: AddressSelectorPr
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [supabase]);
+
+  useEffect(() => {
+    void fetchAddresses();
+  }, [fetchAddresses]);
 
   const handleImport = (): void => {
     const selected = addresses.find((addr) => addr.id === selectedId);

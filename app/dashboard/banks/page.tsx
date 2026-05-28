@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { BankDetailsDB, BilledFromAddress } from '@/types';
 import { Button } from '@/components/ui/button';
@@ -19,11 +19,7 @@ export default function BanksPage() {
   const [editingBank, setEditingBank] = useState<BankDetailsDB | null>(null);
   const supabase = createClient();
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  const fetchData = async (): Promise<void> => {
+  const fetchData = useCallback(async (): Promise<void> => {
     try {
       setIsLoading(true);
       
@@ -50,7 +46,11 @@ export default function BanksPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [supabase]);
+
+  useEffect(() => {
+    void fetchData();
+  }, [fetchData]);
 
   const handleDelete = async (id: string): Promise<void> => {
     const confirmed = confirm('Are you sure you want to delete this bank account? All linked companies will lose their bank link.');

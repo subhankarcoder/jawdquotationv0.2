@@ -5,12 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { FaGoogle } from 'react-icons/fa';
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 
 export default function LoginPage() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const router = useRouter();
   const supabase = createClient();
 
   const handleGoogleLogin = async (): Promise<void> => {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { BilledFromAddress } from '@/types';
 import { Button } from '@/components/ui/button';
@@ -18,11 +18,7 @@ export default function AddressesPage() {
   const [editingAddress, setEditingAddress] = useState<BilledFromAddress | null>(null);
   const supabase = createClient();
 
-  useEffect(() => {
-    fetchAddresses();
-  }, []);
-
-  const fetchAddresses = async (): Promise<void> => {
+  const fetchAddresses = useCallback(async (): Promise<void> => {
     try {
       setIsLoading(true);
       const { data, error } = await supabase
@@ -40,7 +36,11 @@ export default function AddressesPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [supabase]);
+
+  useEffect(() => {
+    void fetchAddresses();
+  }, [fetchAddresses]);
 
   const handleDelete = async (id: string): Promise<void> => {
     const confirmed = confirm('Are you sure you want to delete this address?');

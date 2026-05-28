@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 'use client';
 
 import { useState, useRef } from 'react';
@@ -49,7 +50,7 @@ export default function LogoUpload({ value, onChange, label = 'Company Logo' }: 
       const fileName = `${user.id}/${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`;
 
       // Upload file to the 'logos' bucket
-      const { data, error: uploadError } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from('logos')
         .upload(fileName, file, {
           cacheControl: '3600',
