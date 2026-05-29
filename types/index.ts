@@ -50,6 +50,9 @@ export interface Totals {
 export type RoundingType = 'none' | 'up' | 'down';
 
 export interface QuotationData {
+    id?: string;
+    status?: 'draft' | 'quotation';
+    theme?: string;
     step: number;
     quotationName: string;
     quotationId: string;

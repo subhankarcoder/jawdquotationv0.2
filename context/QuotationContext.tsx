@@ -14,7 +14,9 @@ type Action =
     | { type: 'ADD_ITEM' }
     | { type: 'UPDATE_ITEM'; index: number; field: keyof QuotationItem; value: string | number | CompanyDetails | ClientDetails | QuotationItem[] | BankDetails | Totals | RoundingType }
     | { type: 'REMOVE_ITEM'; index: number }
-    | { type: 'RECALCULATE_TOTALS' };
+    | { type: 'RECALCULATE_TOTALS' }
+    | { type: 'LOAD_QUOTATION'; payload: QuotationData }
+    | { type: 'RESET_QUOTATION' };
 
 // Helper function to apply rounding
 const applyRounding = (amount: number, roundingType: RoundingType): number => {
@@ -30,6 +32,7 @@ const applyRounding = (amount: number, roundingType: RoundingType): number => {
 
 // Initial state of the quotation data
 const initialState: QuotationData = {
+    theme: 'modern',
     step: 1,
     quotationName: 'Quotation',
     quotationId: 'REF/2025-26/001',
@@ -103,6 +106,10 @@ const QuotationReducer = (state: QuotationData, action: Action): QuotationData =
                     grandTotal 
                 } 
             };
+        case 'LOAD_QUOTATION':
+            return { ...action.payload };
+        case 'RESET_QUOTATION':
+            return { ...initialState };
         default:
             return state;
     }

@@ -10,6 +10,8 @@ import { Plus } from 'lucide-react';
 import toast from 'react-hot-toast';
 import BankForm from '@/components/banks/BankForm';
 import BankCard from '@/components/banks/BankCard';
+import { useHelpTour } from '@/lib/hooks/useHelpTour';
+import { DriveStep } from 'driver.js';
 
 export default function BanksPage() {
   const [banks, setBanks] = useState<BankDetailsDB[]>([]);
@@ -18,6 +20,35 @@ export default function BanksPage() {
   const [showForm, setShowForm] = useState<boolean>(false);
   const [editingBank, setEditingBank] = useState<BankDetailsDB | null>(null);
   const supabase = createClient();
+
+  const getSteps = useCallback((): DriveStep[] => [
+    {
+      popover: {
+        title: 'Receiving Bank Accounts',
+        description: 'Connect and store your credentials to receive payments. When drafting quotations, these accounts can be dynamically embedded with one click.',
+      }
+    },
+    {
+      element: document.getElementById('add-bank-btn') ? '#add-bank-btn' : '#add-bank-fallback-btn',
+      popover: {
+        title: 'Add Bank Credentials',
+        description: 'Click here to save receiving bank parameters. Specify details like bank name, holder name, account type (e.g. Current/Savings), account number, and IFSC.',
+        side: 'left',
+        align: 'center'
+      }
+    },
+    {
+      element: '.bank-card-item',
+      popover: {
+        title: 'Bank Credentials Card',
+        description: 'Displays saved credentials and any active company profiles linked to this bank. A linked bank profile will appear on that company\'s final quotations automatically!',
+        side: 'top',
+        align: 'center'
+      }
+    }
+  ], []);
+
+  useHelpTour(getSteps);
 
   const fetchData = useCallback(async (): Promise<void> => {
     try {
@@ -41,7 +72,7 @@ export default function BanksPage() {
       setBanks((bankData as BankDetailsDB[]) || []);
       setCompanies((companyData as BilledFromAddress[]) || []);
     } catch (error: unknown) {
-      toast.error('Failed to fetch bank accounts');
+      toast.error('Failed To Fetch Bank Accounts');
       console.error('Fetch error:', error instanceof Error ? error.message : error);
     } finally {
       setIsLoading(false);
@@ -73,10 +104,10 @@ export default function BanksPage() {
 
       if (deleteError) throw deleteError;
 
-      toast.success('Bank account deleted successfully');
+      toast.success('Bank Account Deleted Successfully');
       await fetchData();
     } catch (error: unknown) {
-      toast.error('Failed to delete bank account');
+      toast.error('Failed To Delete Bank Account');
       console.error('Delete error:', error instanceof Error ? error.message : error);
     }
   };
@@ -102,14 +133,18 @@ export default function BanksPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row justify-between sm:items-end pb-6 border-b border-zinc-200 dark:border-zinc-800 gap-4 mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Manage Bank Details</h1>
-          <p className="text-gray-600 mt-1">
-            Store and manage bank accounts to connect them with your company profiles
+          <h1 className="text-[26px] font-semibold tracking-tight text-zinc-950 dark:text-zinc-50 leading-none">Bank Accounts</h1>
+          <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-2">
+            Store and manage bank credentials to connect them directly with your billing identities.
           </p>
         </div>
-        <Button onClick={() => setShowForm(true)} className="flex items-center gap-2">
+        <Button 
+          id="add-bank-btn"
+          onClick={() => setShowForm(true)} 
+          className="flex items-center gap-2 bg-zinc-900 dark:bg-zinc-50 text-white dark:text-zinc-950 hover:bg-zinc-800 dark:hover:bg-zinc-200 text-xs font-medium rounded-md h-9 px-4 shadow-sm transition-colors cursor-pointer self-start sm:self-auto"
+        >
           <Plus className="h-4 w-4" />
           Add Bank Account
         </Button>
@@ -124,17 +159,23 @@ export default function BanksPage() {
       )}
 
       {banks.length === 0 ? (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-12">
-            <CreditCard className="h-16 w-16 text-gray-300 mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              No bank accounts yet
+        <Card className="border-border/60 shadow-xs">
+          <CardContent className="flex flex-col items-center justify-center py-16 text-center">
+            <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center mb-3">
+              <CreditCard className="h-5 w-5 text-muted-foreground/60" />
+            </div>
+            <h3 className="text-sm font-normal text-foreground mb-1">
+              No Bank Accounts Yet
             </h3>
-            <p className="text-gray-600 text-center mb-4">
-              Add your first bank details to link with your company profiles
+            <p className="text-xs text-muted-foreground max-w-sm mb-5 leading-normal">
+              Add Your First Receiving Bank Credentials. Connecting Accounts To Your Company Profile Automatically Displays Them On The Finalized Invoice.
             </p>
-            <Button onClick={() => setShowForm(true)}>
-              <Plus className="h-4 w-4 mr-2" />
+            <Button 
+              id="add-bank-fallback-btn"
+              onClick={() => setShowForm(true)}
+              className="bg-primary text-primary-foreground hover:bg-primary/95 text-xs font-normal rounded-lg h-9 px-4"
+            >
+              <Plus className="h-3.5 w-3.5 mr-1" />
               Add Bank Account
             </Button>
           </CardContent>

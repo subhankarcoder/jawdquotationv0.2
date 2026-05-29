@@ -7,13 +7,15 @@ interface PDFPreviewProps {
     filename?: string;
     buttonText?: string;
     buttonClassName?: string;
+    onDownload?: () => void;
 }
 
 export default function PDFPreview({
     children,
     filename = "document.pdf",
     buttonText = "Download PDF",
-    buttonClassName = "bg-green-500 text-white px-4 py-2 mt-4 rounded hover:bg-green-600"
+    buttonClassName = "bg-green-500 text-white px-4 py-2 mt-4 rounded hover:bg-green-600",
+    onDownload
 }: PDFPreviewProps) {
     const pdfRef = useRef<HTMLDivElement | null>(null);  
     
@@ -174,6 +176,7 @@ export default function PDFPreview({
             }
             
             pdf.save(filename);
+            onDownload?.();
             
         } catch (error) {
             console.error('Error generating PDF:', error);

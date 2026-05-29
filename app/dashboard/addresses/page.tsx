@@ -10,6 +10,8 @@ import { Plus } from 'lucide-react';
 import toast from 'react-hot-toast';
 import AddressForm from '@/components/addresses/AddressForm';
 import AddressCard from '@/components/addresses/AddressCard';
+import { useHelpTour } from '@/lib/hooks/useHelpTour';
+import { DriveStep } from 'driver.js';
 
 export default function AddressesPage() {
   const [addresses, setAddresses] = useState<BilledFromAddress[]>([]);
@@ -17,6 +19,35 @@ export default function AddressesPage() {
   const [showForm, setShowForm] = useState<boolean>(false);
   const [editingAddress, setEditingAddress] = useState<BilledFromAddress | null>(null);
   const supabase = createClient();
+
+  const getSteps = useCallback((): DriveStep[] => [
+    {
+      popover: {
+        title: 'Billing Addresses Registry',
+        description: 'Welcome to your Billing Identity database. Save and manage your own company profiles or client billing addresses to instantly fill drafts later.',
+      }
+    },
+    {
+      element: document.getElementById('add-address-btn') ? '#add-address-btn' : '#add-address-fallback-btn',
+      popover: {
+        title: 'Create Billing Address',
+        description: 'Click here to construct a new verified billing card. You can configure custom logos, official email addresses, contact phones, and GSTIN/PAN info.',
+        side: 'left',
+        align: 'center'
+      }
+    },
+    {
+      element: '.address-card-item',
+      popover: {
+        title: 'Profile Information Card',
+        description: 'This holds the verified details of a saved company or client. You can edit credentials, delete obsolete records, or set one as the preselected Default.',
+        side: 'top',
+        align: 'center'
+      }
+    }
+  ], []);
+
+  useHelpTour(getSteps);
 
   const fetchAddresses = useCallback(async (): Promise<void> => {
     try {
@@ -31,7 +62,7 @@ export default function AddressesPage() {
 
       setAddresses(data as BilledFromAddress[] || []);
     } catch (error: unknown) {
-      toast.error('Failed to fetch addresses');
+      toast.error('Failed To Fetch Addresses');
       console.error('Fetch error:', error instanceof Error ? error.message : error);
     } finally {
       setIsLoading(false);
@@ -54,10 +85,10 @@ export default function AddressesPage() {
 
       if (error) throw error;
 
-      toast.success('Address deleted successfully');
+      toast.success('Address Deleted Successfully');
       await fetchAddresses();
     } catch (error: unknown) {
-      toast.error('Failed to delete address');
+      toast.error('Failed To Delete Address');
       console.error('Delete error:', error instanceof Error ? error.message : error);
     }
   };
@@ -71,10 +102,10 @@ export default function AddressesPage() {
 
       if (error) throw error;
 
-      toast.success('Default address updated');
+      toast.success('Default Address Updated');
       await fetchAddresses();
     } catch (error: unknown) {
-      toast.error('Failed to set default address');
+      toast.error('Failed To Set Default Address');
       console.error('Set default error:', error instanceof Error ? error.message : error);
     }
   };
@@ -100,16 +131,20 @@ export default function AddressesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row justify-between sm:items-end pb-6 border-b border-zinc-200 dark:border-zinc-800 gap-4 mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Manage Addresses</h1>
-          <p className="text-gray-600 mt-1">
-            Store and manage your billing addresses for quick quotation creation
+          <h1 className="text-[26px] font-semibold tracking-tight text-zinc-950 dark:text-zinc-50 leading-none">Billing Addresses</h1>
+          <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-2">
+            Store and manage your verified billing addresses for one-click quotation creation.
           </p>
         </div>
-        <Button onClick={() => setShowForm(true)} className="flex items-center gap-2">
+        <Button 
+          id="add-address-btn"
+          onClick={() => setShowForm(true)} 
+          className="flex items-center gap-2 bg-zinc-900 dark:bg-zinc-50 text-white dark:text-zinc-950 hover:bg-zinc-800 dark:hover:bg-zinc-200 text-xs font-medium rounded-md h-9 px-4 shadow-sm transition-colors cursor-pointer self-start sm:self-auto"
+        >
           <Plus className="h-4 w-4" />
-          Add New Address
+          Add Billing Address
         </Button>
       </div>
 
@@ -122,18 +157,24 @@ export default function AddressesPage() {
       )}
 
       {addresses.length === 0 ? (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-12">
-            <FaMapMarkerAlt className="h-16 w-16 text-gray-300 mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              No addresses yet
+        <Card className="border-border/60 shadow-xs">
+          <CardContent className="flex flex-col items-center justify-center py-16 text-center">
+            <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center mb-3">
+              <FaMapMarkerAlt className="h-5 w-5 text-muted-foreground/60" />
+            </div>
+            <h3 className="text-sm font-normal text-foreground mb-1">
+              No Saved Addresses
             </h3>
-            <p className="text-gray-600 text-center mb-4">
-              Add your first billing address to get started
+            <p className="text-xs text-muted-foreground max-w-sm mb-5 leading-normal">
+              Add Your First Billing Address. You Can Easily Select It When Drafting Your Quotation To Bypass Typing.
             </p>
-            <Button onClick={() => setShowForm(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              Add Address
+            <Button 
+              id="add-address-fallback-btn"
+              onClick={() => setShowForm(true)}
+              className="bg-primary text-primary-foreground hover:bg-primary/95 text-xs font-normal rounded-lg h-9 px-4"
+            >
+              <Plus className="h-3.5 w-3.5 mr-1" />
+              Create Address Card
             </Button>
           </CardContent>
         </Card>
