@@ -14,7 +14,7 @@ export default function PDFGenerator() {
             
             {/* Download Button Component */}
             <PDFPreview
-                filename={`Quotation-${state.quotationId}.pdf`}
+                filename={`${(state.quotationName || 'Quotation').trim().replace(/[/\\?%*:|"<>]/g, '_')}-${state.quotationId}.pdf`}
                 buttonText="Download PDF"
                 buttonClassName="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 mb-4 w-full"
             >

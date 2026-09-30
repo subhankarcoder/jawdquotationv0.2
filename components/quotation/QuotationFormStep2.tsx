@@ -31,7 +31,7 @@ export default function QuotationStep2() {
                 
                 {/* PDF Download Button */}
                 <PDFPreview
-                    filename={`Quotation-${state.quotationId}.pdf`}
+                    filename={`${(state.quotationName || 'Quotation').trim().replace(/[/\\?%*:|"<>]/g, '_')}-${state.quotationId}.pdf`}
                     buttonText="Download Official PDF"
                     buttonClassName="inline-flex items-center justify-center whitespace-nowrap rounded-lg text-xs font-normal ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/95 h-9 px-4 shadow-sm"
                 >
@@ -45,7 +45,7 @@ export default function QuotationStep2() {
                    <div className="h-2 w-2 rounded-full bg-red-400" />
                    <div className="h-2 w-2 rounded-full bg-amber-400" />
                    <div className="h-2 w-2 rounded-full bg-emerald-400" />
-                   <span className="ml-2 truncate select-none">Preview: Quotation-{state.quotationId}.pdf</span>
+                   <span className="ml-2 truncate select-none">Preview: {(state.quotationName || 'Quotation').trim()}-{state.quotationId}.pdf</span>
                  </div>
                  <div className="p-1 sm:p-6 bg-muted/20">
                    <div className="bg-white shadow-md border border-border/40 max-w-3xl mx-auto">

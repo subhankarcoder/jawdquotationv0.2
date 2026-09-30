@@ -288,7 +288,7 @@ CREATE POLICY "Users can delete their own quotations" ON public.quotations FOR D
               <span className="hidden sm:inline">&bull;</span>
               <span className="flex items-center gap-1.5">
                 <span className="h-2 w-2 rounded-full bg-amber-500" />
-                3. Paste SQL and click 'Run'
+                3. Paste SQL and click &apos;Run&apos;
               </span>
             </div>
           </CardContent>
@@ -436,7 +436,7 @@ CREATE POLICY "Users can delete their own quotations" ON public.quotations FOR D
 
                         {/* Inline PDF download button utilizing the cached state in the row */}
                         <PDFPreview
-                          filename={`Quotation-${row.quotation_id}.pdf`}
+                          filename={`${(row.quotation_name || row.data?.quotationName || 'Quotation').trim().replace(/[/\\?%*:|"<>]/g, '_')}-${row.quotation_id}.pdf`}
                           buttonText="PDF"
                           buttonClassName="bg-black hover:bg-zinc-800 text-white dark:bg-white dark:text-black hover:dark:bg-zinc-100 h-9 font-mono text-xs px-3.5 rounded-md flex items-center gap-1.5 font-bold shadow-xs focus:outline-none"
                         >

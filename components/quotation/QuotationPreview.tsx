@@ -253,7 +253,7 @@ export default function QuotationPreview({ data }: QuotationPreviewProps) {
                     color: theme.primaryColor,
                     letterSpacing: '0.05em'
                   }}>
-                    QUOTATION
+                    {data.quotationName?.trim() || 'QUOTATION'}
                   </h1>
                   <table style={{ margin: '0 auto', borderCollapse: 'collapse', fontSize: '12px' }}>
                     <tbody>
@@ -305,7 +305,7 @@ export default function QuotationPreview({ data }: QuotationPreviewProps) {
                     color: theme.primaryColor,
                     letterSpacing: '-0.03em'
                   }}>
-                    QUOTATION
+                    {data.quotationName?.trim() || 'QUOTATION'}
                   </h1>
                   <table style={{ marginLeft: 'auto', borderCollapse: 'collapse', fontSize: '12px' }}>
                     <tbody>

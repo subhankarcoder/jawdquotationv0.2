@@ -1,6 +1,6 @@
 import html2canvas from "html2canvas-pro";
 import jsPDF from "jspdf";
-import { useRef, ReactNode } from "react";
+import { useRef, ReactNode, useState } from "react";
 
 interface PDFPreviewProps {
     children: ReactNode;
@@ -18,13 +18,18 @@ export default function PDFPreview({
     onDownload
 }: PDFPreviewProps) {
     const pdfRef = useRef<HTMLDivElement | null>(null);  
+    const [isGenerating, setIsGenerating] = useState(false);
     
     const generatePDF = async () => {
+        if (isGenerating) return;
+
         const element = pdfRef.current;
         if (!element) {
             console.error('PDF element not found');
             return;
         }   
+
+        setIsGenerating(true);
 
         // Keep the element completely hidden but positioned for rendering
         element.style.position = 'fixed';
@@ -40,8 +45,17 @@ export default function PDFPreview({
         element.style.visibility = 'visible';
         
         try {
+            // Wait for custom fonts to load if available
+            if (typeof document !== 'undefined' && 'fonts' in document && document.fonts?.ready) {
+                try {
+                    await document.fonts.ready;
+                } catch {
+                    // font loading fallback
+                }
+            }
+
             // Wait for content to render and images to load
-            await new Promise((resolve) => setTimeout(resolve, 500));
+            await new Promise((resolve) => setTimeout(resolve, 400));
             
             // Ensure all images are loaded
             const images = element.querySelectorAll('img');
@@ -53,13 +67,11 @@ export default function PDFPreview({
                 });
             }));
             
-            console.log('Element dimensions:', element.offsetWidth, element.offsetHeight);
-            
             const canvas = await html2canvas(element, {
                 scale: 2,
                 useCORS: true,
                 logging: false,
-                allowTaint: true,
+                allowTaint: false,
                 backgroundColor: '#ffffff',
                 height: element.scrollHeight,
                 width: element.scrollWidth,
@@ -67,34 +79,31 @@ export default function PDFPreview({
                 scrollY: 0
             });           
             
-            console.log('Canvas dimensions:', canvas.width, canvas.height);         
-            
             // Validate canvas
             if (!canvas || canvas.width === 0 || canvas.height === 0) {
                 console.error('html2canvas failed - canvas has zero dimensions');
                 return;
             }
 
-            const imgData = canvas.toDataURL('image/png', 1.0); // Use PNG for better quality
+            // Use JPEG at 0.92 quality for sharp text and dramatic size compression (90%+ reduction vs uncompressed PNG)
+            const imgData = canvas.toDataURL('image/jpeg', 0.92);
             const pdf = new jsPDF({
                 orientation: 'portrait',
                 unit: 'mm',
                 format: 'a4',
+                compress: true, // Enable stream compression in jsPDF
             });
 
             // A4 dimensions in mm
             const pageWidth = 210;
             const pageHeight = 297;
-            const margin = 2; // 10mm margin on all sides
+            const margin = 2; // Margin on all sides
             const contentWidth = pageWidth - (margin * 2);
             const contentHeight = pageHeight - (margin * 2);
             
             // Calculate scaling to fit content width
             const imgWidth = contentWidth;
             const imgHeight = (canvas.height * imgWidth) / canvas.width;
-            
-            console.log('PDF dimensions - Width:', imgWidth, 'Height:', imgHeight);
-            console.log('Content area:', contentWidth, 'x', contentHeight);
             
             // Validate calculated dimensions
             if (isNaN(imgHeight) || imgHeight <= 0) {
@@ -104,13 +113,10 @@ export default function PDFPreview({
             
             // If content fits on one page
             if (imgHeight <= contentHeight) {
-                pdf.addImage(imgData, 'PNG', margin, margin, imgWidth, imgHeight);
+                pdf.addImage(imgData, 'JPEG', margin, margin, imgWidth, imgHeight, undefined, 'FAST');
             } else {
-                // Improved multi-page handling
+                // Multi-page handling with compressed JPEG per page
                 const totalPages = Math.ceil(imgHeight / contentHeight);
-                // const currentPage = 1;
-                
-                // Calculate the scale factor between canvas pixels and PDF mm
                 const scaleY = canvas.height / imgHeight;
                 
                 for (let page = 0; page < totalPages; page++) {
@@ -118,46 +124,39 @@ export default function PDFPreview({
                         pdf.addPage();
                     }
                     
-                    // Calculate the Y position in the original canvas for this page
                     const startY = page * contentHeight;
                     const endY = Math.min((page + 1) * contentHeight, imgHeight);
                     const pageContentHeight = endY - startY;
                     
-                    // Convert to canvas coordinates
                     const canvasStartY = Math.floor(startY * scaleY);
                     const canvasEndY = Math.floor(endY * scaleY);
                     const canvasPageHeight = canvasEndY - canvasStartY;
-                    
-                    console.log(`Page ${page + 1}: Y ${startY}mm to ${endY}mm (canvas: ${canvasStartY}px to ${canvasEndY}px)`);
                     
                     // Create a temporary canvas for this page's content
                     const pageCanvas = document.createElement('canvas');
                     const pageCtx = pageCanvas.getContext('2d');
                     
                     if (pageCtx) {
-                        // Set canvas size
                         pageCanvas.width = canvas.width;
-                        pageCanvas.height = Math.max(canvasPageHeight, 1); // Ensure minimum height
+                        pageCanvas.height = Math.max(canvasPageHeight, 1);
                         
-                        // Fill with white background
+                        // Fill with clean white background
                         pageCtx.fillStyle = '#ffffff';
                         pageCtx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
                         
-                        // Draw the portion of the original canvas for this page
                         try {
                             pageCtx.drawImage(
                                 canvas,
-                                0, canvasStartY, // Source x, y
-                                canvas.width, canvasPageHeight, // Source width, height
-                                0, 0, // Destination x, y
-                                pageCanvas.width, pageCanvas.height // Destination width, height
+                                0, canvasStartY,
+                                canvas.width, canvasPageHeight,
+                                0, 0,
+                                pageCanvas.width, pageCanvas.height
                             );
                             
-                            const pageImgData = pageCanvas.toDataURL('image/png', 1.0);
-                            pdf.addImage(pageImgData, 'PNG', margin, margin, imgWidth, pageContentHeight);
+                            const pageImgData = pageCanvas.toDataURL('image/jpeg', 0.92);
+                            pdf.addImage(pageImgData, 'JPEG', margin, margin, imgWidth, pageContentHeight, undefined, 'FAST');
                         } catch (drawError) {
                             console.error('Error drawing page content:', drawError);
-                            // Fallback: just draw what we can
                             const safeHeight = Math.min(canvasPageHeight, canvas.height - canvasStartY);
                             if (safeHeight > 0) {
                                 pageCtx.drawImage(
@@ -167,8 +166,8 @@ export default function PDFPreview({
                                     0, 0,
                                     pageCanvas.width, safeHeight
                                 );
-                                const pageImgData = pageCanvas.toDataURL('image/png', 1.0);
-                                pdf.addImage(pageImgData, 'PNG', margin, margin, imgWidth, (safeHeight / scaleY));
+                                const pageImgData = pageCanvas.toDataURL('image/jpeg', 0.92);
+                                pdf.addImage(pageImgData, 'JPEG', margin, margin, imgWidth, (safeHeight / scaleY), undefined, 'FAST');
                             }
                         }
                     }
@@ -190,8 +189,9 @@ export default function PDFPreview({
             element.style.zIndex = '-1000';
             element.style.opacity = '0';
             element.style.visibility = 'hidden';
+            setIsGenerating(false);
         }
-    }
+    };
     
     return (
         <>
@@ -214,9 +214,13 @@ export default function PDFPreview({
             >
                 {children}
             </div>
-            <button onClick={generatePDF} className={buttonClassName}>
-                {buttonText}
+            <button 
+                onClick={generatePDF} 
+                disabled={isGenerating}
+                className={`${buttonClassName} ${isGenerating ? 'opacity-70 cursor-not-allowed' : ''}`}
+            >
+                {isGenerating ? 'Generating...' : buttonText}
             </button>
         </>
-    )
+    );
 }

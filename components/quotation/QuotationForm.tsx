@@ -131,7 +131,7 @@ export default function QuotationForm() {
             element: '#quotationName',
             popover: {
               title: 'Document Name',
-              description: 'Enter a recognizable title for this proposal, e.g., "Web Development Services Agreement" or "Graphic Design Bundle".',
+              description: 'Specify the document title for the PDF header, e.g. "Tax Invoice", "Invoice", or "Quotation".',
               side: 'bottom',
             }
           },
@@ -343,7 +343,7 @@ export default function QuotationForm() {
       doc.write(`
         <html>
           <head>
-            <title>Quotation - ${state.quotationId}</title>
+            <title>${(state.quotationName || 'Quotation').trim()} - ${state.quotationId}</title>
             <style>
               @page {
                 size: A4;
@@ -730,7 +730,7 @@ export default function QuotationForm() {
                     label="Document Name"
                     value={state.quotationName}
                     onChange={(e) => dispatch({ type: 'SET_FIELD', field: 'quotationName', value: e.target.value })}
-                    placeholder="Web Development Services Quotation"
+                    placeholder="e.g. Quotation, Tax Invoice, Proforma Invoice"
                     required
                   />
                   <InputField
@@ -1573,7 +1573,7 @@ export default function QuotationForm() {
                       </div>
                       <CardContent className="p-5 flex flex-col gap-2.5">
                         <PDFPreview
-                          filename={`Quotation-${state.quotationId}.pdf`}
+                          filename={`${(state.quotationName || 'Quotation').trim().replace(/[/\\?%*:|"<>]/g, '_')}-${state.quotationId}.pdf`}
                           buttonText="Download PDF"
                           buttonClassName="w-full bg-black text-white hover:bg-neutral-800 border border-black font-mono font-bold text-xs py-2.5 rounded-sm transition-all duration-150 shadow-xs flex items-center justify-center gap-2"
                           onDownload={() => saveQuotation('quotation')}
@@ -1707,7 +1707,7 @@ export default function QuotationForm() {
             </Button>
           ) : (
             <PDFPreview
-              filename={`Quotation-${state.quotationId}.pdf`}
+              filename={`${(state.quotationName || 'Quotation').trim().replace(/[/\\?%*:|"<>]/g, '_')}-${state.quotationId}.pdf`}
               buttonText="Download PDF"
               buttonClassName="inline-flex items-center gap-1.5 bg-black text-white hover:bg-neutral-800 text-xs font-mono rounded-sm h-9 px-5 shadow-sm focus:outline-none"
               onDownload={() => saveQuotation('quotation')}
