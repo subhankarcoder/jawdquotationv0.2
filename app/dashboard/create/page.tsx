@@ -13,6 +13,7 @@ function QuotationLoader() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const id = searchParams.get('id');
+  const isCopied = searchParams.get('copied') === 'true';
   const [loading, setLoading] = useState(!!id);
   const supabase = createClient();
 
@@ -42,7 +43,11 @@ function QuotationLoader() {
             status: data.status,
           };
           dispatch({ type: 'LOAD_QUOTATION', payload: quotationData });
-          toast.success('Loaded draft successfully');
+          if (isCopied) {
+            toast.success('Duplicate quotation loaded! Original remains safe.');
+          } else {
+            toast.success(data.status === 'quotation' ? 'Loaded quotation successfully' : 'Loaded draft successfully');
+          }
         } else {
           toast.error('Quotation not found');
           router.push('/dashboard');

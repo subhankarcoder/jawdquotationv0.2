@@ -45,6 +45,7 @@ export default function QuotationsDashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [dbError, setDbError] = useState<{ code?: string; message?: string } | null>(null);
   const [copied, setCopied] = useState(false);
+  const [copyingId, setCopyingId] = useState<string | null>(null);
 
   const sqlScript = `-- 1. Create the quotations table
 CREATE TABLE public.quotations (
@@ -157,6 +158,62 @@ CREATE POLICY "Users can delete their own quotations" ON public.quotations FOR D
     } catch (err: any) {
       console.error('Error deleting quotation:', err);
       toast.error('Failed to delete quotation');
+    }
+  };
+
+  const handleCopyAndEdit = async (row: QuotationRow) => {
+    try {
+      setCopyingId(row.id);
+      const toastId = toast.loading('Duplicating quotation template...');
+
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError || !user) {
+        toast.error('Session expired. Please log in again.', { id: toastId });
+        setCopyingId(null);
+        return;
+      }
+
+      // Deep clone original quotation data
+      const clonedData = row.data ? JSON.parse(JSON.stringify(row.data)) : {};
+
+      // Reset step to 1 for the new quotation editor flow and status to draft
+      clonedData.step = 1;
+      clonedData.status = 'draft';
+      delete clonedData.id;
+
+      const payload = {
+        user_id: user.id,
+        quotation_id: row.quotation_id,
+        quotation_name: row.quotation_name,
+        client_name: row.client_name,
+        grand_total: row.grand_total,
+        status: 'draft',
+        data: {
+          ...clonedData,
+          status: 'draft',
+        },
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+
+      const { data, error } = await supabase
+        .from('quotations')
+        .insert(payload)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      if (data && data.id) {
+        toast.success('Quotation copied! Opening editor...', { id: toastId });
+        router.push(`/dashboard/create?id=${data.id}&copied=true`);
+      } else {
+        throw new Error('Failed to create new quotation record');
+      }
+    } catch (err: any) {
+      console.error('Error copying quotation:', err);
+      toast.error(err.message || 'Failed to duplicate quotation');
+      setCopyingId(null);
     }
   };
 
@@ -444,6 +501,34 @@ CREATE POLICY "Users can delete their own quotations" ON public.quotations FOR D
                         </PDFPreview>
                       </>
                     )}
+
+                    {/* Copy and Edit Action (Shown on hover) */}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={copyingId === row.id}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleCopyAndEdit(row);
+                      }}
+                      className={cn(
+                        "border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-750 dark:text-zinc-200 hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black hover:border-black dark:hover:border-white h-9 font-mono text-xs px-3 rounded-md flex items-center gap-1.5 shadow-2xs transition-all duration-200 cursor-pointer",
+                        "opacity-100 md:opacity-0 md:pointer-events-none md:group-hover:opacity-100 md:group-hover:pointer-events-auto"
+                      )}
+                      title="Create an exact copy of this quotation to edit without modifying original"
+                    >
+                      {copyingId === row.id ? (
+                        <>
+                          <Loader2 className="h-3.5 w-3.5 animate-spin text-zinc-500" />
+                          <span>Copying...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="h-3.5 w-3.5 text-zinc-500" />
+                          <span>Copy & Edit</span>
+                        </>
+                      )}
+                    </Button>
                   </div>
                 </div>
 
